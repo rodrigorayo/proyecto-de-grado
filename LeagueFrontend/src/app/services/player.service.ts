@@ -1,13 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PlayerService {
-  // Asegúrate que el puerto coincida con tu Swagger (7105)
-  private apiUrl = 'https://localhost:7105/api/Players'; 
+  private apiUrl = `${environment.apiUrl}/Players`; 
   private http = inject(HttpClient);
 
   private getHeaders(): HttpHeaders {

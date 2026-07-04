@@ -1,11 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class TournamentService {
-  // Asegúrate de que este puerto coincida con tu Swagger
-  private apiUrl = 'https://localhost:7105/api/Tournaments';
+  private apiUrl = `${environment.apiUrl}/Tournaments`;
   private http = inject(HttpClient);
 
   // Helper para enviar el Token

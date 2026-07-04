@@ -2,13 +2,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+import { environment } from '../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class StandingService {
-  // Asegúrate que el puerto coincida con tu Swagger
-  private apiUrl = 'https://localhost:7105/api/Standings';
   private http = inject(HttpClient);
+  private apiUrl = `${environment.apiUrl}/Standings`;
 
   // ⚠️ CAMBIO: Quitamos los headers de autenticación porque es una vista PÚBLICA.
   // Los fans no tienen token, así que si lo enviamos, fallará.

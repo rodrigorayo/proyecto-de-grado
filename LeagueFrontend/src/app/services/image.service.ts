@@ -2,13 +2,15 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+import { environment } from '../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class ImageService {
   private http = inject(HttpClient);
   // Asegúrate que el puerto coincida (7105)
-  private apiUrl = 'https://localhost:7105/api/Images/upload';
+  private apiUrl = `${environment.apiUrl}/Images/upload`;
 
   upload(file: File): Observable<any> {
     const formData = new FormData();

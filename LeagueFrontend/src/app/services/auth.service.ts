@@ -1,14 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private http = inject(HttpClient);
-  // Asegúrate que este puerto sea el correcto
-  private apiUrl = 'https://localhost:7105/api/Auth'; 
+  private apiUrl = `${environment.apiUrl}/Auth`;
 
   login(credentials: { userName: string; password: string }) {
     return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(

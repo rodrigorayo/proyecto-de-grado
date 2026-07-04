@@ -2,10 +2,11 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { News, CreateNewsDto, UpdateNewsDto } from '../models/news.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class NewsService {
-  private apiUrl = 'https://localhost:7105/api/News';
+  private apiUrl = `${environment.apiUrl}/News`;
   private http = inject(HttpClient);
 
   private getHeaders() {

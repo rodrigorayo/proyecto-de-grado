@@ -18,12 +18,14 @@ export interface Match {
   incidents?: string; // 👈 Agregué esto opcional
 }
 
+import { environment } from '../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class MatchService {
   private http = inject(HttpClient);
-  private apiUrl = 'https://localhost:7105/api/Matches'; 
+  private apiUrl = `${environment.apiUrl}/Matches`;
 
   // Helper para el token
   private getHeaders() {

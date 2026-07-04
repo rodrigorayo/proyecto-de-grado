@@ -1,4 +1,4 @@
-using League.Application;
+ï»¿using League.Application;
 using League.Application.Common.Interfaces;
 using League.Infrastructure;
 using League.Infrastructure.Persistence;
@@ -25,7 +25,7 @@ builder.Services.AddPresentation();
 // 3. Base de Datos
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString,
+    options.UseNpgsql(connectionString,
         b => b.MigrationsAssembly("League.Infrastructure")));
 builder.Services.AddScoped<IApplicationDbContext>(provider =>
     provider.GetRequiredService<ApplicationDbContext>());
@@ -34,12 +34,12 @@ builder.Services.AddScoped<IApplicationDbContext>(provider =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular",
-        policy => policy.WithOrigins("http://localhost:3000", "http://localhost:4200")
+        policy => policy.AllowAnyOrigin()
                         .AllowAnyMethod()
                         .AllowAnyHeader());
 });
 
-// --- NUEVO: CONFIGURACIÓN DE AUTENTICACIÓN JWT ---
+// --- NUEVO: CONFIGURACIï¿½N DE AUTENTICACIï¿½N JWT ---
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -61,7 +61,7 @@ builder.Services.AddControllers()
 
 builder.Services.AddEndpointsApiExplorer();
 
-// --- NUEVO: CONFIGURACIÓN DE SWAGGER CON CANDADO ---
+// --- NUEVO: CONFIGURACIï¿½N DE SWAGGER CON CANDADO ---
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "League.WebApi", Version = "v1" });
@@ -110,7 +110,7 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowAngular");
 
-// --- NUEVO: ACTIVAR EL MIDDLEWARE DE AUTENTICACIÓN ---
+// --- NUEVO: ACTIVAR EL MIDDLEWARE DE AUTENTICACIï¿½N ---
 // IMPORTANTE: UseAuthentication debe ir ANTES de UseAuthorization
 app.UseAuthentication();
 app.UseAuthorization();
