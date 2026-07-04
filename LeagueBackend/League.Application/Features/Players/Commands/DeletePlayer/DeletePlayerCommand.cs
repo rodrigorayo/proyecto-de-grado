@@ -1,4 +1,4 @@
-﻿using League.Application.Common.Interfaces;
+using League.Application.Common.Interfaces;
 using MediatR;
 using System;
 using System.Threading;
@@ -19,7 +19,13 @@ namespace League.Application.Features.Players.Commands.DeletePlayer
 
         public async Task Handle(DeletePlayerCommand request, CancellationToken cancellationToken)
         {
-            await _repository.DeleteAsync(request.Id);
+            var player = await _repository.GetByIdAsync(request.Id);
+            if (player != null)
+            {
+                player.ToggleStatus();
+                await _repository.UpdateAsync(player);
+            }
         }
+
     }
 }

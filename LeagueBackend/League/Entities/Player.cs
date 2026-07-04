@@ -1,4 +1,4 @@
-﻿using League.Domain.Common;
+using League.Domain.Common;
 using League.Domain.Enums;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -25,6 +25,17 @@ namespace League.Domain.Entities
         // 👇 NUEVO: Foto del Jugador
         [MaxLength(500)]
         public string? PhotoUrl { get; private set; }
+
+        // --- Soft Delete (Estado Activo/Inactivo) ---
+        public bool IsActive { get; private set; } = true;
+
+        public void ToggleStatus()
+        {
+            IsActive = !IsActive;
+            Touch();
+        }
+        // ---------------------------------------------
+
 
         // RELACIONES
         [Required]

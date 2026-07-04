@@ -1,5 +1,5 @@
-﻿using League.Application.Common.Interfaces;
-using League.Domain.Enums; // Asegúrate de que esto esté aquí
+using League.Application.Common.Interfaces;
+using League.Domain.Enums;
 using MediatR;
 using System;
 using System.Text;
@@ -33,14 +33,14 @@ namespace League.Application.Features.Matches.Commands.GenerateChronicle
             var match = await _matchRepository.GetByIdAsync(request.MatchId);
             if (match == null) throw new Exception("Partido no encontrado.");
 
-            // Usamos MatchStatus (que confirmaste que tienes)
+            // Usamos MatchStatus 
             if (match.Status != MatchStatus.Finished)
                 throw new Exception("El partido debe haber finalizado para generar la crónica.");
 
             // 2. Obtener los eventos (goles, tarjetas)
             var events = await _eventRepository.GetByMatchIdAsync(request.MatchId);
 
-            // 3. CONSTRUIR EL PROMPT (La instrucción para la IA)
+            // 3. CONSTRUIR EL PROMPT
             var sb = new StringBuilder();
             sb.AppendLine("Actúa como un periodista deportivo apasionado de la Liga Gremial de Yacuiba.");
             sb.AppendLine("Escribe una crónica corta, emocionante y periodística sobre el siguiente partido.");
@@ -60,7 +60,6 @@ namespace League.Application.Features.Matches.Commands.GenerateChronicle
             {
                 foreach (var evt in events)
                 {
-                    // 👇 AQUÍ ESTABA EL ERROR: Ahora usamos MatchEventType para comparar
                     string tipo = "Evento";
 
                     if (evt.Type == MatchEventType.Goal) tipo = "GOL de";
@@ -72,7 +71,6 @@ namespace League.Application.Features.Matches.Commands.GenerateChronicle
                 }
             }
 
-            // Accedemos a la nueva propiedad Incidents
             if (!string.IsNullOrEmpty(match.Incidents))
             {
                 sb.AppendLine($"\nObservaciones del Árbitro: {match.Incidents}");
@@ -82,6 +80,8 @@ namespace League.Application.Features.Matches.Commands.GenerateChronicle
             sb.AppendLine("- Escribe un Título llamativo en negrita.");
             sb.AppendLine("- Escribe 2 párrafos de resumen.");
             sb.AppendLine("- No uses saludos ni despedidas genéricas, ve directo a la noticia.");
+            sb.AppendLine("- NUNCA menciones que eres una IA, Gemini, o un modelo de lenguaje. Escribe como un periodista humano.");
+            sb.AppendLine("- NO utilices emojis en el texto bajo ninguna circunstancia. Mantén el tono periodístico y serio.");
 
             // 4. Llamar a la IA
             var chronicle = await _aiService.GenerateTextAsync(sb.ToString());

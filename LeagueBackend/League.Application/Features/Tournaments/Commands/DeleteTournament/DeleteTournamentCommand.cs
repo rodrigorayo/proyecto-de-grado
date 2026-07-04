@@ -1,4 +1,4 @@
-﻿using League.Application.Common.Interfaces;
+using League.Application.Common.Interfaces;
 using MediatR;
 using System;
 using System.Threading;
@@ -16,7 +16,13 @@ namespace League.Application.Features.Tournaments.Commands.DeleteTournament
 
         public async Task Handle(DeleteTournamentCommand request, CancellationToken cancellationToken)
         {
-            await _repository.DeleteAsync(request.Id);
+            var tournament = await _repository.GetByIdAsync(request.Id);
+            if (tournament != null)
+            {
+                tournament.ToggleStatus();
+                await _repository.UpdateAsync(tournament);
+            }
         }
+
     }
 }

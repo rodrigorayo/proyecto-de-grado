@@ -8,11 +8,15 @@ import { TournamentService } from '../../services/tournament.service';
 import { MatchService } from '../../services/match.service';
 import { MatchEventService } from '../../services/match-event.service';
 import { ImageService } from '../../services/image.service';
+import { PredictionService } from '../../services/prediction.service'; // 👈 INYECTAR
+import { AlertService } from '../../services/alert.service';
+import { AdminNewsComponent } from '../admin-news/admin-news.component';
+import { AdminLandingComponent } from '../admin-landing/admin-landing.component';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, AdminNewsComponent, AdminLandingComponent],
   templateUrl: './admin-dashboard.component.html',
   //styleUrls: ['./admin-dashboard.component.css']
 })
@@ -24,9 +28,12 @@ export class AdminDashboardComponent implements OnInit {
   private teamService = inject(TeamService);
   private playerService = inject(PlayerService);
   private tournamentService = inject(TournamentService);
-  private matchService = inject(MatchService); // Se mantiene private, lo usamos dentro de la clase
+  private matchService = inject(MatchService); // Se mantiene private
   private matchEventService = inject(MatchEventService);
   private imageService = inject(ImageService);
+  private predictionService = inject(PredictionService); // 👈 INYECTAR
+  private alertService = inject(AlertService);
+
   
   // Estado de Vista
   currentView = signal<string>('dashboard');
@@ -56,9 +63,16 @@ export class AdminDashboardComponent implements OnInit {
   tempPlayerPhotoUrl = signal<string>('');
   isUploading = signal(false);
 
-  // --- IA STATE (NUEVO) ---
-  // 👈 Variable para controlar el spinner del botón de IA
+  // --- IA STATE (CRÓNICAS) ---
   isGeneratingAI = signal(false);
+  isEditingChronicle = signal<boolean>(false);
+  editedChronicleText = signal<string>('');
+  isSavingChronicle = signal<boolean>(false);
+
+  // --- IA STATE (PREDICCIONES) 👇👇 ---
+  aiAnalysis = signal<any>(null); // Aquí guardamos el JSON que devuelve Gemini
+  isAnalyzingMatch = signal(false); // Para el spinner de carga
+
 
   // --- VALIDACIONES ---
   teamsMatchValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => { 
@@ -113,6 +127,8 @@ export class AdminDashboardComponent implements OnInit {
     { id: 'equipos', label: 'Equipos', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>' },
     { id: 'jugadores', label: 'Jugadores', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>' },
     { id: 'partidos', label: 'Partidos', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>' },
+    { id: 'noticias', label: 'Noticias', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-.586-1.414l-4.5-4.5A2 2 0 0015.5 3H15m3 16H8m11-4H8m11-4H8" /></svg>' },
+    { id: 'diseno', label: 'Diseño Web', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>' },
     { id: 'configuracion', label: 'Torneos', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>' }
   ]);
 
@@ -155,7 +171,7 @@ export class AdminDashboardComponent implements OnInit {
         },
         error: (e) => {
           this.isUploading.set(false);
-          alert('Error al subir imagen: ' + e.message);
+          this.alertService.showAlert('Error al subir la imagen: ' + e.message, 'error', 'Error de Carga');
         }
       });
     }
@@ -176,7 +192,14 @@ export class AdminDashboardComponent implements OnInit {
     this.currentView.set('registrar-equipo'); 
   }
 
-  deleteTeam(t: any) { if(confirm('Borrar?')) this.teamService.deleteTeam(t.id).subscribe(() => this.loadRealTeams()); }
+  deleteTeam(t: any) {
+    const action = t.isActive ? 'desactivar' : 'activar';
+    this.alertService.showConfirm(`¿Estás seguro de que deseas ${action} el equipo "${t.name}"?`, `Confirmar ${action.charAt(0).toUpperCase() + action.slice(1)}`).then(confirmed => {
+      if (confirmed) {
+        this.teamService.deleteTeam(t.id).subscribe(() => this.loadRealTeams());
+      }
+    });
+  }
   
   onSubmitTeam() { 
     if(this.teamForm.valid) { 
@@ -205,7 +228,17 @@ export class AdminDashboardComponent implements OnInit {
     this.currentView.set('registrar-jugador'); 
   }
 
-  deletePlayer(p: any) { if(confirm('Borrar?')) this.playerService.deletePlayer(p.id).subscribe(()=>{ this.loadPlayers(this.selectedTeamId()!); this.loadRealTeams(); }); }
+  deletePlayer(p: any) {
+    const action = p.isActive ? 'desactivar' : 'activar';
+    this.alertService.showConfirm(`¿Estás seguro de que deseas ${action} al jugador "${p.fullName}"?`, `Confirmar ${action.charAt(0).toUpperCase() + action.slice(1)}`).then(confirmed => {
+      if (confirmed) {
+        this.playerService.deletePlayer(p.id).subscribe(() => {
+          this.loadPlayers(this.selectedTeamId()!);
+          this.loadRealTeams();
+        });
+      }
+    });
+  }
   
   onSubmitPlayer() { 
     if(this.playerForm.valid) { 
@@ -233,13 +266,24 @@ export class AdminDashboardComponent implements OnInit {
   startCreatingTournament() { this.editingTournamentId.set(null); this.tournamentForm.reset(); this.showNewTournamentForm.set(true); }
   startEditingTournament(t: any) { this.editingTournamentId.set(t.id); this.tournamentForm.patchValue({name:t.name, startDate:t.startDate.split('T')[0], endDate:t.endDate?.split('T')[0]}); this.showNewTournamentForm.set(false); }
   cancelTournamentEdit() { this.editingTournamentId.set(null); this.showNewTournamentForm.set(false); }
-  deleteTournament(t: any) { if(confirm('Borrar?')) this.tournamentService.delete(t.id).subscribe(()=>this.loadTournaments()); }
+  deleteTournament(t: any) {
+    const action = t.isActive ? 'desactivar' : 'activar';
+    this.alertService.showConfirm(`¿Estás seguro de que deseas ${action} el torneo "${t.name}"?`, `Confirmar ${action.charAt(0).toUpperCase() + action.slice(1)}`).then(confirmed => {
+      if (confirmed) {
+        this.tournamentService.delete(t.id).subscribe(() => this.loadTournaments());
+      }
+    });
+  }
   onSubmitTournament() { 
     if(this.tournamentForm.valid) { 
         const d={...this.tournamentForm.value, id:this.editingTournamentId()}; 
         if(!d.endDate) d.endDate=null; 
         const req = this.editingTournamentId() ? this.tournamentService.update(this.editingTournamentId()!,d) : this.tournamentService.create(d);
-        req.subscribe(()=>{alert('Torneo guardado'); this.loadTournaments(); this.cancelTournamentEdit();}); 
+        req.subscribe(()=>{
+          this.alertService.showAlert('Torneo guardado correctamente.', 'success', 'Torneo Guardado');
+          this.loadTournaments();
+          this.cancelTournamentEdit();
+        }); 
     } 
   }
 
@@ -250,7 +294,10 @@ export class AdminDashboardComponent implements OnInit {
   getTournamentName(id: string | null) { return id ? this.tournamentsList().find(t => t.id === id)?.name : ''; }
   
   startProgrammingMatch() {
-    if(!this.selectedTournamentIdMatchView()) { alert('⚠️ Selecciona un torneo arriba primero.'); return; }
+    if(!this.selectedTournamentIdMatchView()) {
+      this.alertService.showAlert('Selecciona un torneo arriba primero.', 'warning', 'Atención');
+      return;
+    }
     const now = new Date();
     const nowString = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
     this.matchForm.reset({venue:'Estadio Principal', matchDate: nowString, homeTeamId: '', awayTeamId: ''});
@@ -261,8 +308,12 @@ export class AdminDashboardComponent implements OnInit {
     if(this.matchForm.valid) {
       const matchData = { tournamentId: this.selectedTournamentIdMatchView(), ...this.matchForm.value };
       this.matchService.createMatch(matchData).subscribe({
-        next:()=>{ alert('✅ Partido creado'); this.loadMatches(this.selectedTournamentIdMatchView()!); this.currentView.set('partidos'); },
-        error:(e)=>alert('❌ Error: ' + (e.error?.error || e.message))
+        next:()=>{
+          this.alertService.showAlert('Partido programado exitosamente.', 'success', 'Partido Programado');
+          this.loadMatches(this.selectedTournamentIdMatchView()!);
+          this.currentView.set('partidos');
+        },
+        error:(e)=>this.alertService.showAlert('Error al programar partido: ' + (e.error?.error || e.message), 'error', 'Error')
       });
     }
   }
@@ -270,7 +321,11 @@ export class AdminDashboardComponent implements OnInit {
   // --- GESTIÓN DE EVENTOS (MINUTO A MINUTO) ---
   manageMatch(match: any) {
     this.selectedMatch.set(match);
-    // 👈 MEJORA: Cargamos incidents y chronicle si existen
+    
+    // 👇👇 LIMPIAMOS EL ANÁLISIS DE LA IA AL CAMBIAR DE PARTIDO 👇👇
+    this.aiAnalysis.set(null);
+    
+    // Cargamos incidents y chronicle si existen
     this.resultForm.reset({ 
         homeScore: match.homeScore || 0, 
         awayScore: match.awayScore || 0, 
@@ -296,31 +351,82 @@ export class AdminDashboardComponent implements OnInit {
         const matchId = this.selectedMatch().id;
         this.matchEventService.addEvent(matchId, playerId!, Number(type), minute!).subscribe({
             next: () => { this.loadMatchEvents(matchId); this.eventForm.patchValue({ minute: minute, type: '0', playerId: '' }); },
-            error: (e) => alert('Error: ' + e.message)
+            error: (e) => this.alertService.showAlert('Error al agregar evento: ' + e.message, 'error', 'Error')
         });
     }
   }
 
-  // 👇 NUEVA FUNCIÓN PARA GENERAR CRÓNICA CON IA 👇
+  // 👇 FUNCIÓN PARA GENERAR CRÓNICA CON IA (POST-PARTIDO) 👇
   generateAIChronicle() {
     const match = this.selectedMatch();
     if (!match) return;
 
-    if (!confirm('¿Quieres que la IA escriba la crónica de este partido basada en los goles y eventos?')) return;
+    this.alertService.showConfirm('¿Quieres que la IA escriba la crónica de este partido basada en los goles y eventos?', 'Generar Crónica').then(confirmed => {
+      if (!confirmed) return;
+      this.isGeneratingAI.set(true);
+      this.matchService.generateChronicle(match.id).subscribe({
+        next: (res: any) => {
+          this.isGeneratingAI.set(false);
+          this.selectedMatch.update(m => ({ ...m, chronicle: res.chronicle }));
+          this.alertService.showAlert('Crónica generada con éxito.', 'success', 'Éxito');
+        },
+        error: (err) => {
+          this.isGeneratingAI.set(false);
+          this.alertService.showAlert('Error al generar crónica: ' + err.message, 'error', 'Error');
+        }
+      });
+    });
+  }
 
-    this.isGeneratingAI.set(true);
-    // Llamamos al método nuevo del servicio
-    this.matchService.generateChronicle(match.id).subscribe({
-      next: (res: any) => {
-        this.isGeneratingAI.set(false);
-        // Actualizamos el partido seleccionado con la nueva crónica para que se vea en pantalla
-        this.selectedMatch.update(m => ({ ...m, chronicle: res.chronicle }));
-        alert('✨ ¡Crónica generada con éxito!');
+  startEditingChronicle() {
+    const match = this.selectedMatch();
+    if (match) {
+      this.editedChronicleText.set(match.chronicle || '');
+      this.isEditingChronicle.set(true);
+    }
+  }
+
+  cancelEditingChronicle() {
+    this.isEditingChronicle.set(false);
+  }
+
+  saveEditedChronicle() {
+    const match = this.selectedMatch();
+    if (match && this.editedChronicleText().trim()) {
+      this.isSavingChronicle.set(true);
+      this.matchService.updateChronicle(match.id, this.editedChronicleText()).subscribe({
+        next: () => {
+          this.isSavingChronicle.set(false);
+          this.isEditingChronicle.set(false);
+          this.selectedMatch.update(m => ({ ...m, chronicle: this.editedChronicleText() }));
+          this.alertService.showAlert('Crónica guardada correctamente.', 'success', 'Éxito');
+        },
+        error: (err) => {
+          this.isSavingChronicle.set(false);
+          this.alertService.showAlert('Error al guardar la crónica: ' + err.message, 'error', 'Error');
+        }
+      });
+    }
+  }
+
+
+  // 👇 FUNCIÓN PARA PREDICCIÓN IA (PRE-PARTIDO) 👇
+  runMatchAnalysis() {
+    const match = this.selectedMatch();
+    if (!match) return;
+
+    this.isAnalyzingMatch.set(true);
+    this.aiAnalysis.set(null); // Limpiamos análisis previo
+
+    this.predictionService.analyzeMatch(match.id).subscribe({
+      next: (res) => {
+        this.isAnalyzingMatch.set(false);
+        this.aiAnalysis.set(res);
       },
-      error: (err) => {
-        this.isGeneratingAI.set(false);
-        alert('Error al generar crónica: ' + err.message);
-      }
+        error: (err) => {
+          this.isAnalyzingMatch.set(false);
+          this.alertService.showAlert('Error al analizar el partido: ' + (err.error?.error || err.message), 'error', 'Error');
+        }
     });
   }
 
@@ -328,7 +434,6 @@ export class AdminDashboardComponent implements OnInit {
       if (this.resultForm.valid && this.selectedMatch()) {
           const formVal = this.resultForm.value;
           const matchId = this.selectedMatch().id;
-          // Incluimos incidents en el comando
           const command = { 
               matchId: matchId, 
               homeScore: Number(formVal.homeScore), 
@@ -336,8 +441,13 @@ export class AdminDashboardComponent implements OnInit {
               incidents: formVal.incidents || '' 
           };
           this.matchService.updateMatchResult(matchId, command).subscribe({
-            next: () => { alert('✅ Partido Finalizado'); this.loadMatches(this.selectedTournamentIdMatchView()!); this.selectedMatch.set(null); this.currentView.set('partidos'); },
-            error: (err) => alert(`❌ Error: ${err.error?.error || 'No se pudo guardar'}`)
+            next: () => {
+              this.alertService.showAlert('Partido finalizado y resultado oficial registrado.', 'success', 'Partido Finalizado');
+              this.loadMatches(this.selectedTournamentIdMatchView()!);
+              this.selectedMatch.set(null);
+              this.currentView.set('partidos');
+            },
+            error: (err) => this.alertService.showAlert(`Error al registrar el resultado: ${err.error?.error || 'No se pudo guardar'}`, 'error', 'Error')
           });
       }
   }

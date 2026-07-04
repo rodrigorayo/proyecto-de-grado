@@ -1,0 +1,253 @@
+<div class="flex min-h-screen bg-white font-sans text-gray-800">
+      
+      <!-- Sidebar -->
+      <aside class="w-64 bg-white border-r border-gray-100 flex flex-col fixed h-full z-20">
+        <!-- Logo -->
+        <div class="h-16 flex items-center px-6 border-b border-gray-50">
+           <svg class="w-6 h-6 text-[#4a9f24] mr-2" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/>
+           </svg>
+           <span class="text-xl font-bold text-[#4a9f24] tracking-tight">SilbatoÁgil</span>
+        </div>
+
+        <!-- Menu -->
+        <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+           @for (item of menuItems(); track item.id) {
+             <a href="#" (click)="navigate($event, item.id)"
+                class="flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-colors group"
+                [ngClass]="{
+                  'bg-gray-100 text-gray-900': currentView() === item.id,
+                  'text-gray-500 hover:bg-gray-50 hover:text-gray-900': currentView() !== item.id
+                }">
+                <span class="mr-3" [innerHTML]="item.icon"></span>
+                {{ item.label }}
+             </a>
+           }
+        </nav>
+
+        <!-- Logout Button -->
+        <div class="p-4 border-t border-gray-100">
+            <button (click)="logout()" class="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2.5 px-4 rounded-lg transition-colors font-semibold text-sm shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                Cerrar Sesión
+            </button>
+        </div>
+      </aside>
+
+      <!-- Main Content Layout -->
+      <div class="ml-64 flex-1 flex flex-col min-w-0 bg-white">
+        
+        <!-- Header -->
+        <header class="h-16 border-b border-gray-100 flex items-center justify-between px-8 bg-white sticky top-0 z-10">
+           <h1 class="text-lg font-bold text-gray-800">{{ getPageTitle() }}</h1>
+           <div class="flex items-center gap-3">
+              <span class="text-sm font-medium text-gray-600">Comité / Árbitro</span>
+              <div class="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 font-bold">C</div>
+           </div>
+        </header>
+
+        <!-- Main Dashboard View -->
+        <div class="p-8 max-w-7xl mx-auto w-full">
+          
+          @if (currentView() === 'dashboard') {
+            <!-- DASHBOARD VIEW -->
+            <div class="mb-8">
+              <p class="text-sm text-gray-500">Bienvenido, revisa el estado de tus partidos asignados.</p>
+            </div>
+
+            <!-- Top Cards Row -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+               
+               <!-- Card 1: Pendientes -->
+               <div class="bg-white p-6 rounded-lg border border-gray-100 shadow-sm flex flex-col items-start hover:shadow-md transition-shadow">
+                 <div class="w-10 h-10 rounded-full bg-[#4a9f24] flex items-center justify-center text-white mb-4">
+                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                 </div>
+                 <div class="flex items-baseline gap-2 mb-1">
+                   <h3 class="text-4xl font-bold text-gray-900">{{ countPending() }}</h3>
+                 </div>
+                 <p class="text-sm font-semibold text-gray-900 mb-1">Partidos Pendientes</p>
+                 <p class="text-xs text-gray-400">Por arbitrar esta temporada.</p>
+               </div>
+
+               <!-- Card 2: Recientes -->
+               <div class="bg-white p-6 rounded-lg border border-gray-100 shadow-sm flex flex-col items-start hover:shadow-md transition-shadow">
+                 <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 mb-4">
+                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                 </div>
+                 <div class="flex items-baseline gap-2 mb-1">
+                   <h3 class="text-4xl font-bold text-gray-900">{{ countFinished() }}</h3>
+                 </div>
+                 <p class="text-sm font-semibold text-gray-900 mb-1">Partidos Finalizados</p>
+                 <p class="text-xs text-gray-400">Actas cerradas correctamente.</p>
+               </div>
+
+            </div>
+
+            <div class="flex gap-4 mb-10">
+              <button (click)="currentView.set('partidos')" class="px-4 py-2 bg-white border border-gray-200 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors">
+                Ver Mi Calendario
+              </button>
+            </div>
+
+          } @else if (currentView() === 'partidos') {
+            <!-- MATCHES VIEW -->
+             <div class="flex flex-col gap-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-gray-900">Listado de Partidos</h2>
+                    <div class="flex gap-2">
+                        <span class="px-3 py-1 bg-yellow-50 text-yellow-800 text-xs font-bold rounded-full border border-yellow-200">Pendientes: {{ countPending() }}</span>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex items-center gap-4">
+                  <label class="font-bold text-gray-700">Torneo:</label>
+                 <select [ngModel]="selectedTournamentId()" (ngModelChange)="onTournamentChange($event)" class="border rounded-lg px-4 py-2 w-64 bg-white">
+                    <option [ngValue]="null" disabled selected>-- Elige un Torneo --</option>
+                    @for (t of tournamentsList(); track t.id) { <option [value]="t.id">{{ t.name }}</option> }
+                 </select>
+                </div>
+
+                @if (selectedTournamentId()) {
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead>
+                                    <tr class="text-xs text-gray-500 border-b border-gray-100 bg-gray-50/50 uppercase tracking-wider">
+                                        <th class="px-6 py-4">Fecha/Hora</th>
+                                        <th class="px-6 py-4">Local</th>
+                                        <th class="px-6 py-4">Visitante</th>
+                                        <th class="px-6 py-4 text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @for (match of matchesList(); track match.id) {
+                                        <tr class="text-sm hover:bg-gray-50 transition-colors">
+                                            <td class="px-6 py-4 font-medium">{{ match.matchDate | date:'medium' }}</td>
+                                            <td class="px-6 py-4 font-medium text-gray-800">{{ match.homeTeamName || match.homeTeam?.name }}</td>
+                                            <td class="px-6 py-4 font-medium text-gray-800">{{ match.awayTeamName || match.awayTeam?.name }}</td>
+                                            <td class="px-6 py-4 text-center">
+                                                <button (click)="openReportForm(match)" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-bold rounded shadow-sm transition-colors focus:outline-none"
+                                                    [ngClass]="match.status === 2 ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-[#4a9f24] hover:bg-[#3d8b1e] text-white'">
+                                                    {{ match.status === 2 ? 'Ver Acta' : 'Registrar Acta' }}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    } @empty {
+                                        <tr><td colspan="4" class="px-6 py-8 text-center text-gray-400">No hay partidos en este torneo.</td></tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+             </div>
+
+          } @else if (currentView() === 'registrar-acta') {
+             <!-- REPORT FORM VIEW -->
+             <div class="flex flex-col gap-6 animate-fade-in">
+                <div class="flex items-center gap-4">
+                    <button (click)="currentView.set('partidos')" class="text-gray-400 hover:text-[#4a9f24] transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    </button>
+                    <h2 class="text-2xl font-bold text-gray-900">Acta del Partido</h2>
+                </div>
+
+                @if (selectedMatch()) {
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        
+                        <div class="lg:col-span-2 space-y-6">
+                            <!-- EVENTOS -->
+                            @if (selectedMatch()?.status !== 2) {
+                                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                                    <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Registrar Evento (Goles / Tarjetas)</h3>
+                                    <form [formGroup]="eventForm" (ngSubmit)="addEvent()" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                                        <div class="md:col-span-2">
+                                            <label class="block text-xs font-bold text-gray-500 mb-1">Jugador</label>
+                                            <select formControlName="playerId" class="w-full border rounded px-3 py-2 text-sm bg-gray-50">
+                                                <option value="" disabled>Selecciona jugador...</option>
+                                                <optgroup [label]="selectedMatch()?.homeTeamName || selectedMatch()?.homeTeam?.name || 'Local'">
+                                                    @for(p of matchSquads().home; track p.id) { <option [value]="p.id">{{ p.fullName }} (#{{ p.jerseyNumber }})</option> }
+                                                </optgroup>
+                                                <optgroup [label]="selectedMatch()?.awayTeamName || selectedMatch()?.awayTeam?.name || 'Visita'">
+                                                    @for(p of matchSquads().away; track p.id) { <option [value]="p.id">{{ p.fullName }} (#{{ p.jerseyNumber }})</option> }
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-500 mb-1">Evento</label>
+                                            <select formControlName="type" class="w-full border rounded px-3 py-2 text-sm bg-gray-50">
+                                                <option value="0">⚽ Gol</option>
+                                                <option value="1">🟨 Amarilla</option>
+                                                <option value="2">🟥 Roja</option>
+                                                <option value="3">❌ Autogol</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-500 mb-1">Minuto</label>
+                                            <div class="flex gap-2">
+                                                <input type="number" formControlName="minute" class="w-full border rounded px-3 py-2 text-sm" placeholder="Ej: 45">
+                                                <button type="submit" [disabled]="eventForm.invalid" class="bg-blue-600 text-white px-3 rounded hover:bg-blue-700 font-bold">+</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            }
+
+                            <!-- LISTA DE EVENTOS -->
+                            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                                <div class="bg-gray-50 px-6 py-3 border-b border-gray-200 font-bold text-xs text-gray-500 uppercase">Resumen del Partido</div>
+                                <table class="w-full text-sm text-left">
+                                    <tbody class="divide-y divide-gray-100">
+                                        @for(evt of matchEvents(); track evt.id || evt.tempId) {
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-6 py-3 font-mono font-bold text-gray-500 w-16 text-right">{{ evt.minute }}'</td>
+                                                <td class="px-6 py-3 font-medium">{{ getEventLabel(evt.type) }}</td>
+                                                <td class="px-6 py-3 text-gray-700">{{ evt.player?.fullName || 'Jugador' }}</td>
+                                            </tr>
+                                        } @empty {
+                                            <tr><td colspan="3" class="px-6 py-8 text-center text-gray-400 italic">No hay eventos registrados aún.</td></tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- RESULTADO FINAL -->
+                        <div class="space-y-6">
+                            <form [formGroup]="reportForm" (ngSubmit)="submitReport()" class="bg-white p-6 rounded-xl border border-gray-200 shadow-lg sticky top-24">
+                                <h3 class="font-bold text-gray-900 mb-6 text-center text-lg">Marcador Final</h3>
+                                <div class="flex items-center justify-between gap-4 mb-8">
+                                    <div class="text-center flex-1 overflow-hidden">
+                                        <label class="block text-xs font-bold text-gray-500 mb-2 truncate">{{ selectedMatch()?.homeTeamName || selectedMatch()?.homeTeam?.name }}</label>
+                                        <input type="number" formControlName="homeScore" class="w-20 h-20 mx-auto text-center text-4xl font-black border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-[#388e14]/20 focus:border-[#388e14] bg-gray-50 disabled:bg-gray-100 disabled:text-gray-500" [attr.disabled]="selectedMatch()?.status === 2 ? true : null">
+                                    </div>
+                                    <span class="text-2xl font-bold text-gray-300">-</span>
+                                    <div class="text-center flex-1 overflow-hidden">
+                                        <label class="block text-xs font-bold text-gray-500 mb-2 truncate">{{ selectedMatch()?.awayTeamName || selectedMatch()?.awayTeam?.name }}</label>
+                                        <input type="number" formControlName="awayScore" class="w-20 h-20 mx-auto text-center text-4xl font-black border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-[#388e14]/20 focus:border-[#388e14] bg-gray-50 disabled:bg-gray-100 disabled:text-gray-500" [attr.disabled]="selectedMatch()?.status === 2 ? true : null">
+                                    </div>
+                                </div>
+
+                                <div class="mb-6">
+                                    <label class="block text-xs font-bold text-gray-500 mb-2">Observaciones / Incidencias</label>
+                                    <textarea formControlName="incidents" rows="4" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#388e14]/20 disabled:bg-gray-100" [attr.disabled]="selectedMatch()?.status === 2 ? true : null"></textarea>
+                                </div>
+
+                                @if (selectedMatch()?.status !== 2) {
+                                    <button type="submit" [disabled]="reportForm.invalid" class="w-full bg-[#388e14] hover:bg-[#2e7510] text-white py-3 rounded-lg font-bold shadow-md transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">CERRAR ACTA</button>
+                                } @else {
+                                    <button type="button" (click)="closeMatchReport()" class="w-full border border-gray-300 text-gray-600 hover:bg-gray-50 py-3 rounded-lg font-bold transition-colors">Volver a Lista</button>
+                                }
+                            </form>
+                        </div>
+                    </div>
+                }
+             </div>
+
+          } @else {
+             <div class="p-12 text-center text-gray-500 font-bold">Vista no implementada / En construcción</div>
+          }
+        </div>
+      </div>
+    </div>

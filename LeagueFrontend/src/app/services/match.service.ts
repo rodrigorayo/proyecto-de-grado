@@ -63,4 +63,8 @@ export class MatchService {
     // El segundo parámetro {} es el body vacío, necesario para un POST
     return this.http.post(`${this.apiUrl}/${matchId}/generate-chronicle`, {}, { headers: this.getHeaders() });
   }
-}
+
+  updateChronicle(matchId: string, chronicle: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${matchId}/Chronicle`, { matchId, chronicle }, { headers: this.getHeaders() });
+  }
+}

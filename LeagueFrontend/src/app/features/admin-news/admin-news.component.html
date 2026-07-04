@@ -1,0 +1,87 @@
+<div class="p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">Gestión de Noticias</h2>
+    <button (click)="openCreateModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+      + Nueva Noticia
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div *ngFor="let news of newsList" class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col">
+      <div class="h-48 bg-gray-200 overflow-hidden relative">
+        <img *ngIf="news.imageUrl" [src]="news.imageUrl" alt="Imagen noticia" class="w-full h-full object-cover">
+        <div *ngIf="!news.imageUrl" class="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+          <i class="fas fa-image text-4xl"></i>
+        </div>
+        <div *ngIf="news.matchId" class="absolute top-2 right-2 bg-purple-600 text-white text-xs px-2 py-1 rounded-full font-semibold shadow flex items-center gap-1">
+          <i class="fas fa-robot"></i> IA
+        </div>
+      </div>
+      <div class="p-4 flex-1 flex flex-col">
+        <h3 class="font-bold text-lg text-gray-800 mb-2 line-clamp-2">{{ news.title }}</h3>
+        <p class="text-sm text-gray-600 line-clamp-3 mb-4 flex-1">{{ news.summary || news.body }}</p>
+        <div class="text-xs text-gray-500 mb-4">{{ news.generatedAt | date:'medium' }}</div>
+        
+        <div class="flex justify-end space-x-2 pt-4 border-t border-gray-100 mt-auto">
+          <button (click)="openEditModal(news)" class="p-2 text-blue-600 hover:bg-blue-50 rounded transition">
+            <i class="fas fa-edit"></i> Editar
+          </button>
+          <button (click)="deleteNews(news.id)" class="p-2 text-red-600 hover:bg-red-50 rounded transition">
+            <i class="fas fa-trash"></i> Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div *ngIf="showModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
+      <div class="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
+        <h3 class="text-xl font-bold">{{ isEditing ? 'Editar Noticia' : 'Crear Noticia' }}</h3>
+        <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto flex-1">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+            <input type="text" [(ngModel)]="formData.title" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Cuerpo de la Noticia</label>
+            <textarea [(ngModel)]="formData.body" rows="6" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Resumen (Opcional)</label>
+            <textarea [(ngModel)]="formData.summary" rows="2" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="Se autogenera si se deja vacío..."></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Fotografía Principal</label>
+            <div class="mt-1 flex items-center space-x-4">
+              <div class="w-32 h-24 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 overflow-hidden flex items-center justify-center">
+                <img *ngIf="imagePreview" [src]="imagePreview" class="w-full h-full object-cover">
+                <i *ngIf="!imagePreview" class="fas fa-image text-gray-400 text-2xl"></i>
+              </div>
+              <input type="file" (change)="onFileSelected($event)" accept="image/*" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6 border-t border-gray-100 flex justify-end space-x-3 shrink-0">
+        <button (click)="closeModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
+        <button (click)="saveNews()" [disabled]="!formData.title || !formData.body || isUploading" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+          <i class="fas fa-spinner fa-spin" *ngIf="isUploading"></i>
+          {{ isUploading ? 'Subiendo imagen...' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -33,7 +33,7 @@ import { MatchEventService } from '../services/match-event.service';
                             
                             @if (match.chronicle) {
                                 <div class="absolute top-0 right-0 bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-1 rounded-bl-lg">
-                                    ✨ IA News
+                                    📰 Crónica
                                 </div>
                             }
 
@@ -118,7 +118,7 @@ import { MatchEventService } from '../services/match-event.service';
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                     <div class="flex items-center gap-2 mb-2 opacity-90">
-                        <span class="text-xs font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded">Resumen IA</span>
+                        <span class="text-xs font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded">Resumen del Partido</span>
                         <span class="text-xs font-medium">{{ selectedMatchForChronicle().matchDate | date:'mediumDate' }}</span>
                     </div>
                     <h3 class="text-2xl font-black leading-tight">
@@ -131,8 +131,7 @@ import { MatchEventService } from '../services/match-event.service';
                         {{ selectedMatchForChronicle().chronicle }}
                     </div>
                     
-                    <div class="mt-8 pt-6 border-t border-gray-100 flex items-center justify-between text-sm text-gray-400">
-                        <span>Generado por Gemini AI 🤖</span>
+                    <div class="mt-8 pt-6 border-t border-gray-100 flex items-center justify-end text-sm text-gray-400">
                         <span>Liga Gremial Yacuiba</span>
                     </div>
                 </div>

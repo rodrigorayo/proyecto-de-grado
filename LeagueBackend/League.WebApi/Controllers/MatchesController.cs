@@ -1,6 +1,8 @@
-﻿using League.Application.Features.Matches.Commands.CreateMatch;
+using League.Application.Features.Matches.Commands.CreateMatch;
 using League.Application.Features.Matches.Commands.GenerateChronicle;
 using League.Application.Features.Matches.Commands.UpdateMatchResult; // 👈 Asegúrate de importar esto
+using League.Application.Features.Matches.Commands.UpdateMatchChronicle;
+
 using League.Application.Features.Matches.Queries.GetMatchesByTournament;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -68,6 +70,24 @@ namespace League.WebApi.Controllers
                 return BadRequest(new { Error = ex.Message });
             }
         }
+
+        [HttpPut("{id}/Chronicle")]
+        public async Task<IActionResult> UpdateChronicle(Guid id, [FromBody] UpdateMatchChronicleCommand command)
+        {
+            if (id != command.MatchId) return BadRequest("El ID de la URL no coincide con el cuerpo.");
+
+            try
+            {
+                var success = await _mediator.Send(command);
+                if (!success) return NotFound("Partido no encontrado.");
+                return Ok(new { Message = "Crónica actualizada correctamente" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
+        }
+
 
         [HttpPost("{id}/generate-chronicle")]
         // [Authorize(Roles = "Admin,Committee")] // Descomenta esto después para seguridad

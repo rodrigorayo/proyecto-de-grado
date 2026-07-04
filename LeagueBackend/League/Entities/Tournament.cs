@@ -1,4 +1,4 @@
-﻿using League.Domain.Common;
+using League.Domain.Common;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -14,6 +14,17 @@ namespace League.Domain.Entities
 
         public DateTime StartDate { get; private set; }
         public DateTime? EndDate { get; private set; }
+
+        // --- Soft Delete (Estado Activo/Inactivo) ---
+        public bool IsActive { get; private set; } = true;
+
+        public void ToggleStatus()
+        {
+            IsActive = !IsActive;
+            Touch();
+        }
+        // ---------------------------------------------
+
 
         // --- RELACIÓN 1:N (Un torneo tiene MUCHOS equipos) ---
         // Usamos virtual ICollection para que EF maneje la relación

@@ -22,6 +22,79 @@ namespace League.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("League.Domain.Entities.LandingSetting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AboutMission")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AboutVision")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("HeroDescription")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HeroSubtitle")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HeroTitle")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PopUpContent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PopUpEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PopUpImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PopUpLinkUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PopUpTitle")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LandingSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
+                            AboutMission = "Organizar campeonatos de fútbol de alto nivel competitivo para los distintos gremios laborales, promoviendo el juego limpio (Fair Play), el bienestar físico de los trabajadores y el compañerismo entre los distintos sectores productivos de nuestra ciudad.",
+                            AboutVision = "Ser reconocidos como la liga deportiva amateur más organizada y tecnológica de la región, destacando por nuestra transparencia, innovación (como la integración de Inteligencia Artificial) y nuestro fuerte impacto positivo en la vida laboral y social de nuestros afiliados.",
+                            CreatedAt = new DateTime(2026, 7, 3, 20, 46, 24, 199, DateTimeKind.Utc).AddTicks(2458),
+                            HeroDescription = "Resultados en vivo, estadísticas detalladas y crónicas impulsadas por inteligencia artificial.",
+                            HeroSubtitle = "Temporada 2025",
+                            HeroTitle = "EL CORAZÓN DEL FÚTBOL GREMIAL",
+                            PopUpContent = "",
+                            PopUpEnabled = false,
+                            PopUpImageUrl = "",
+                            PopUpLinkUrl = "",
+                            PopUpTitle = ""
+                        });
+                });
+
             modelBuilder.Entity("League.Domain.Entities.Match", b =>
                 {
                     b.Property<Guid>("Id")
@@ -133,6 +206,9 @@ namespace League.Infrastructure.Migrations
                     b.Property<DateTime>("GeneratedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid?>("MatchId")
                         .HasColumnType("uniqueidentifier");
 
@@ -183,6 +259,9 @@ namespace League.Infrastructure.Migrations
                     b.Property<int>("Goals")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<int>("Number")
                         .HasColumnType("int");
 
@@ -210,6 +289,46 @@ namespace League.Infrastructure.Migrations
                     b.HasIndex("TeamId");
 
                     b.ToTable("Players");
+                });
+
+            modelBuilder.Entity("League.Domain.Entities.Prediction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("MatchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("PointsEarned")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PredictedAwayScore")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PredictedHomeScore")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MatchId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Predictions");
                 });
 
             modelBuilder.Entity("League.Domain.Entities.Role", b =>
@@ -241,21 +360,21 @@ namespace League.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            CreatedAt = new DateTime(2025, 12, 23, 16, 4, 52, 972, DateTimeKind.Utc).AddTicks(2453),
+                            CreatedAt = new DateTime(2026, 7, 3, 20, 46, 24, 199, DateTimeKind.Utc).AddTicks(1697),
                             Description = "Full Access",
                             Name = "Admin"
                         },
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            CreatedAt = new DateTime(2025, 12, 23, 16, 4, 52, 972, DateTimeKind.Utc).AddTicks(2469),
+                            CreatedAt = new DateTime(2026, 7, 3, 20, 46, 24, 199, DateTimeKind.Utc).AddTicks(1829),
                             Description = "Team Management",
                             Name = "Delegate"
                         },
                         new
                         {
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
-                            CreatedAt = new DateTime(2025, 12, 23, 16, 4, 52, 972, DateTimeKind.Utc).AddTicks(2473),
+                            CreatedAt = new DateTime(2026, 7, 3, 20, 46, 24, 199, DateTimeKind.Utc).AddTicks(1840),
                             Description = "Match Reporting",
                             Name = "Committee"
                         });
@@ -314,6 +433,9 @@ namespace League.Infrastructure.Migrations
 
                     b.Property<DateTime?>("EndDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -418,6 +540,25 @@ namespace League.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("League.Domain.Entities.Prediction", b =>
+                {
+                    b.HasOne("League.Domain.Entities.Match", "Match")
+                        .WithMany()
+                        .HasForeignKey("MatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("League.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Match");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("League.Domain.Entities.Team", b =>

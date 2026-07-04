@@ -52,25 +52,36 @@
                         <th class="px-6 py-3">Logo</th>
                         <th class="px-6 py-3">Nombre</th>
                         <th class="px-6 py-3">Categoría</th>
+                        <th class="px-6 py-3">Estado</th>
                         <th class="px-6 py-3 text-right">Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @for (team of teamsList(); track team.id) {
-                      <tr class="hover:bg-gray-50 text-sm">
+                      <tr class="hover:bg-gray-50 text-sm" [ngClass]="{'opacity-60 bg-gray-50/50': !team.isActive}">
                          <td class="px-6 py-3">
                              <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border border-gray-200">
                                 @if(team.logoUrl) { <img [src]="team.logoUrl" class="w-full h-full object-cover"> } 
-                                @else { <span class="text-[8px] text-gray-400">Sin img</span> }
+                                @else { <span class="text-[8px] text-gray-400">Sin logo</span> }
                              </div>
                          </td>
                          <td class="px-6 py-4 font-medium">{{ team.name }}</td>
                          <td class="px-6 py-4">{{ team.category }}</td>
+                         <td class="px-6 py-4">
+                             @if (team.isActive) {
+                               <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-green-50 text-green-700 border border-green-200">Activo</span>
+                             } @else {
+                               <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-red-50 text-red-700 border border-red-200">Inactivo</span>
+                             }
+                         </td>
                          <td class="px-6 py-4 text-right">
-                             <button (click)="startEditingTeam(team)" class="text-blue-600 mr-2">Editar</button><button (click)="deleteTeam(team)" class="text-red-600">Borrar</button>
+                             <button (click)="startEditingTeam(team)" class="text-blue-600 mr-2 hover:underline">Editar</button>
+                             <button (click)="deleteTeam(team)" [ngClass]="team.isActive ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'" class="font-medium hover:underline">
+                               {{ team.isActive ? 'Desactivar' : 'Activar' }}
+                             </button>
                          </td>
                       </tr>
-                  } @empty { <tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">Sin datos.</td></tr> }
+                  } @empty { <tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">Sin datos.</td></tr> }
                 </tbody>
              </table>
           </div>
@@ -108,7 +119,7 @@
                  <label class="font-bold text-gray-700">Filtrar por Equipo:</label>
                  <select [ngModel]="selectedTeamId()" (ngModelChange)="onTeamFilterChange($event)" class="border rounded-lg px-4 py-2 w-64 bg-white">
                     <option [ngValue]="null" disabled selected>-- Selecciona --</option>
-                    @for (team of teamsList(); track team.id) { <option [value]="team.id">{{ team.name }}</option> }
+                    @for (team of teamsList(); track team.id) { <option [value]="team.id">{{ team.name }} {{ team.isActive ? '' : '(Inactivo)' }}</option> }
                  </select>
               </div>
               @if (selectedTeamId()) {
@@ -120,12 +131,13 @@
                                <th class="px-6 py-3">Nombre</th>
                                <th class="px-6 py-3">C.I.</th>
                                <th class="px-6 py-3">Pos</th>
+                               <th class="px-6 py-3">Estado</th>
                                <th class="px-6 py-3 text-right">Acciones</th>
                            </tr>
                        </thead>
                        <tbody class="divide-y divide-gray-100">
                            @for (player of playersList(); track player.id) {
-                             <tr class="hover:bg-gray-50 text-sm">
+                             <tr class="hover:bg-gray-50 text-sm" [ngClass]="{'opacity-60 bg-gray-50/50': !player.isActive}">
                                 <td class="px-6 py-3">
                                     <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border border-gray-200">
                                        @if(player.photoUrl) { <img [src]="player.photoUrl" class="w-full h-full object-cover"> } 
@@ -133,9 +145,21 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 font-medium">{{ player.fullName }}</td><td class="px-6 py-4">{{ player.ci }}</td><td class="px-6 py-4">{{ player.positionLabel }}</td>
-                                <td class="px-6 py-4 text-right"><button (click)="startEditingPlayer(player)" class="text-blue-600 mr-2">Editar</button><button (click)="deletePlayer(player)" class="text-red-600">Borrar</button></td>
+                                <td class="px-6 py-4">
+                                    @if (player.isActive) {
+                                      <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-green-50 text-green-700 border border-green-200">Activo</span>
+                                    } @else {
+                                      <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-red-50 text-red-700 border border-red-200">Inactivo</span>
+                                    }
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <button (click)="startEditingPlayer(player)" class="text-blue-600 mr-2 hover:underline">Editar</button>
+                                    <button (click)="deletePlayer(player)" [ngClass]="player.isActive ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'" class="font-medium hover:underline">
+                                      {{ player.isActive ? 'Desactivar' : 'Activar' }}
+                                    </button>
+                                </td>
                              </tr>
-                          } @empty { <tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">Sin jugadores.</td></tr> }
+                          } @empty { <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Sin jugadores.</td></tr> }
                        </tbody>
                     </table>
                  </div>
@@ -159,7 +183,7 @@
                         </div>
                     </div>
                  </div>
-                 <div><label class="block text-sm font-medium text-gray-700">Equipo</label><select formControlName="teamId" class="w-full border rounded-lg px-4 py-2 bg-white"><option value="" disabled>Selecciona</option>@for (t of teamsList(); track t.id) {<option [value]="t.id">{{ t.name }}</option>}</select></div>
+                 <div><label class="block text-sm font-medium text-gray-700">Equipo</label><select formControlName="teamId" class="w-full border rounded-lg px-4 py-2 bg-white"><option value="" disabled>Selecciona</option>@for (t of teamsList(); track t.id) { @if (t.isActive) { <option [value]="t.id">{{ t.name }}</option> } }</select></div>
                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">Nombre</label><input formControlName="fullName" class="w-full border rounded-lg px-4 py-2"></div>
                     <div><label class="block text-sm font-medium text-gray-700">C.I.</label><input formControlName="identityCard" class="w-full border rounded-lg px-4 py-2"></div>
@@ -182,7 +206,7 @@
                   <label class="font-bold text-gray-700">Torneo:</label>
                  <select [ngModel]="selectedTournamentIdMatchView()" (ngModelChange)="onTournamentFilterChange($event)" class="border rounded-lg px-4 py-2 w-64 bg-white">
                     <option [ngValue]="null" disabled selected>-- Elige un Torneo --</option>
-                    @for (t of tournamentsList(); track t.id) { <option [value]="t.id">{{ t.name }}</option> }
+                    @for (t of tournamentsList(); track t.id) { <option [value]="t.id">{{ t.name }} {{ t.isActive ? '' : '(Inactivo)' }}</option> }
                  </select>
               </div>
 
@@ -231,8 +255,8 @@
                     <p class="font-bold text-gray-900">{{ getTournamentName(selectedTournamentIdMatchView()) }}</p>
                  </div>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Local</label><select formControlName="homeTeamId" class="w-full border rounded-lg px-4 py-2 bg-white"><option value="" disabled>Selecciona Local</option>@for (t of teamsList(); track t.id) { <option [value]="t.id">{{ t.name }} ({{ t.category }})</option> }</select></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Visitante</label><select formControlName="awayTeamId" class="w-full border rounded-lg px-4 py-2 bg-white"><option value="" disabled>Selecciona Visitante</option>@for (t of teamsList(); track t.id) { <option [value]="t.id">{{ t.name }} ({{ t.category }})</option> }</select></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Local</label><select formControlName="homeTeamId" class="w-full border rounded-lg px-4 py-2 bg-white"><option value="" disabled>Selecciona Local</option>@for (t of teamsList(); track t.id) { @if (t.isActive) { <option [value]="t.id">{{ t.name }} ({{ t.category }})</option> } }</select></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Visitante</label><select formControlName="awayTeamId" class="w-full border rounded-lg px-4 py-2 bg-white"><option value="" disabled>Selecciona Visitante</option>@for (t of teamsList(); track t.id) { @if (t.isActive) { <option [value]="t.id">{{ t.name }} ({{ t.category }})</option> } }</select></div>
                  </div>
                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Fecha y Hora</label><input type="datetime-local" formControlName="matchDate" class="w-full border rounded-lg px-4 py-2"></div>
@@ -328,33 +352,145 @@
                            </div>
 
                            <div class="mb-6">
-                               <label class="block text-xs font-bold text-gray-500 mb-2">Observaciones / Incidencias</label>
-                               <textarea formControlName="incidents" rows="4" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#388e14]/20 disabled:bg-gray-100" [attr.disabled]="selectedMatch()?.status === 2 ? true : null"></textarea>
+                                <label class="block text-xs font-bold text-gray-500 mb-2">Observaciones / Incidencias</label>
+                                <textarea formControlName="incidents" rows="4" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#388e14]/20 disabled:bg-gray-100" [attr.disabled]="selectedMatch()?.status === 2 ? true : null"></textarea>
                            </div>
 
-                           <div class="mb-6 bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-xl border border-purple-100">
-                               <div class="flex justify-between items-center mb-2">
-                                   <label class="block text-xs font-bold text-purple-700">🤖 Crónica del Partido (IA)</label>
-                                   
-                                   @if (!selectedMatch()?.chronicle) {
-                                       <button type="button" (click)="generateAIChronicle()" [disabled]="isGeneratingAI() || selectedMatch()?.status !== 2" 
-                                           class="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 disabled:opacity-50 transition-all">
-                                           @if(isGeneratingAI()){ <span>Pensando...</span> } @else { <span>✨ Generar con IA</span> }
-                                       </button>
-                                   }
-                               </div>
+                            @if (selectedMatch()?.status !== 2) {
+                                <div class="mb-6 bg-white rounded-xl border border-indigo-100 shadow-lg overflow-hidden relative">
+                                    <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-10 -mt-10 blur-2xl"></div>
 
-                               @if (selectedMatch()?.chronicle) {
-                                   <div class="bg-white p-4 rounded-lg border border-purple-100 text-sm text-gray-700 leading-relaxed shadow-sm whitespace-pre-line max-h-60 overflow-y-auto">
-                                       {{ selectedMatch().chronicle }}
-                                   </div>
-                                   <div class="mt-2 text-right">
-                                        <button type="button" (click)="generateAIChronicle()" class="text-xs text-purple-500 underline hover:text-purple-700">Regenerar Crónica</button>
-                                   </div>
-                               } @else {
-                                   <p class="text-xs text-gray-400 italic">La crónica estará disponible cuando finalices el partido y presiones el botón mágico.</p>
-                               }
-                           </div>
+                                    @if (isAnalyzingMatch()) {
+                                        <div class="absolute inset-0 bg-indigo-950/15 backdrop-blur-sm z-20 flex flex-col items-center justify-center transition-all duration-300">
+                                            <div class="relative flex items-center justify-center mb-3">
+                                                <span class="animate-ping absolute inline-flex h-12 w-12 rounded-full bg-indigo-400 opacity-75"></span>
+                                                <div class="relative bg-indigo-600 rounded-full p-3 shadow-lg">
+                                                    <svg class="animate-spin h-6 w-6 text-white" fill="none" viewBox="0 0 24 24">
+                                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <p class="text-sm font-extrabold text-indigo-900 animate-pulse tracking-wide uppercase">Calculando probabilidades...</p>
+                                            <p class="text-xs text-indigo-600 font-semibold mt-1">Analizando estadísticas y rendimiento reciente</p>
+                                        </div>
+                                    }
+
+                                    <div class="p-6 relative z-10">
+                                        <div class="flex justify-between items-start mb-4">
+                                            <div>
+                                                <h3 class="text-lg font-black text-indigo-900 flex items-center gap-2">
+                                                    Predicción Inteligente
+                                                </h3>
+                                            </div>
+                                            
+                                            <button type="button" (click)="runMatchAnalysis()" [disabled]="isAnalyzingMatch()" 
+                                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2">
+                                                @if (isAnalyzingMatch()) {
+                                                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                                    <span>Analizando...</span>
+                                                } @else {
+                                                    <span>Calcular Probabilidades</span>
+                                                }
+                                            </button>
+                                        </div>
+
+                                        @if (aiAnalysis()) {
+                                            <div class="animate-fade-in grid md:grid-cols-3 gap-6 mt-6">
+                                                <div class="bg-indigo-50 rounded-xl p-4 text-center border border-indigo-100">
+                                                    <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Marcador Probable</span>
+                                                    <div class="text-3xl font-black text-indigo-900 mt-1">{{ aiAnalysis().score }}</div>
+                                                </div>
+
+                                                <div class="bg-white rounded-xl p-4 border border-gray-200 md:col-span-2">
+                                                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Probabilidades</span>
+                                                    <div class="text-sm font-bold text-gray-800 mt-1">{{ aiAnalysis().probabilities }}</div>
+                                                    <div class="w-full h-2 bg-gray-100 rounded-full mt-3 overflow-hidden flex">
+                                                        <div class="h-full bg-indigo-500 w-1/3"></div>
+                                                        <div class="h-full bg-gray-300 w-1/3"></div>
+                                                        <div class="h-full bg-indigo-300 w-1/3"></div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="md:col-span-3 bg-white rounded-xl p-5 border border-gray-100 shadow-inner">
+                                                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Análisis Táctico</span>
+                                                    <p class="text-gray-700 text-sm leading-relaxed">{{ aiAnalysis().analysis }}</p>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            <div class="mb-6 bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-xl border border-purple-100 relative overflow-hidden">
+                                @if (isGeneratingAI()) {
+                                    <div class="absolute inset-0 bg-purple-950/15 backdrop-blur-sm z-20 flex flex-col items-center justify-center transition-all duration-300">
+                                        <div class="relative flex items-center justify-center mb-3">
+                                            <span class="animate-ping absolute inline-flex h-12 w-12 rounded-full bg-purple-400 opacity-75"></span>
+                                            <div class="relative bg-purple-600 rounded-full p-3 shadow-lg">
+                                                <svg class="animate-spin h-6 w-6 text-white" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <p class="text-sm font-extrabold text-purple-900 animate-pulse tracking-wide uppercase">Generando crónica...</p>
+                                        <p class="text-xs text-purple-600 font-semibold mt-1">Escribiendo reseña deportiva automática</p>
+                                    </div>
+                                }
+
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="block text-xs font-bold text-purple-700 uppercase tracking-wider">Crónica del Partido</label>
+                                    
+                                    @if (!selectedMatch()?.chronicle) {
+                                        <button type="button" (click)="generateAIChronicle()" [disabled]="isGeneratingAI() || selectedMatch()?.status !== 2" 
+                                            class="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 disabled:opacity-50 transition-all">
+                                            @if (isGeneratingAI()) { <span>Analizando...</span> } @else { <span>Generar Crónica</span> }
+                                        </button>
+                                    }
+                                </div>
+
+                                @if (selectedMatch()?.chronicle) {
+                                    @if (isEditingChronicle()) {
+                                        <div class="space-y-3 relative z-10">
+                                            <textarea 
+                                                [value]="editedChronicleText()" 
+                                                (input)="editedChronicleText.set($any($event.target).value)"
+                                                rows="6" 
+                                                class="w-full border border-purple-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white shadow-inner resize-none text-gray-800 leading-relaxed"
+                                                placeholder="Escribe la crónica del partido..."
+                                                [disabled]="isSavingChronicle()"></textarea>
+                                            <div class="flex justify-end gap-2">
+                                                <button type="button" (click)="cancelEditingChronicle()" [disabled]="isSavingChronicle()" 
+                                                    class="px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors">
+                                                    Cancelar
+                                                </button>
+                                                <button type="button" (click)="saveEditedChronicle()" [disabled]="isSavingChronicle() || !editedChronicleText().trim()" 
+                                                    class="px-3 py-1.5 bg-[#388e14] hover:bg-[#2e7510] text-white rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-1.5">
+                                                    @if (isSavingChronicle()) {
+                                                        <svg class="animate-spin h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                                        <span>Guardando...</span>
+                                                    } @else {
+                                                        <span>Guardar</span>
+                                                    }
+                                                </button>
+                                            </div>
+                                        </div>
+                                    } @else {
+                                        <div class="bg-white p-4 rounded-lg border border-purple-100 text-sm text-gray-700 leading-relaxed shadow-sm whitespace-pre-line max-h-60 overflow-y-auto relative z-10">
+                                            {{ selectedMatch().chronicle }}
+                                        </div>
+                                        <div class="mt-2 flex justify-between items-center relative z-10">
+                                             <button type="button" (click)="startEditingChronicle()" class="text-xs text-purple-600 hover:text-purple-800 font-bold flex items-center gap-1">
+                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                                 Editar
+                                             </button>
+                                             <button type="button" (click)="generateAIChronicle()" class="text-xs text-purple-500 underline hover:text-purple-700">Regenerar Crónica</button>
+                                        </div>
+                                    }
+                                } @else {
+                                    <p class="text-xs text-gray-400 italic">La crónica estará disponible cuando finalices el partido y generes la crónica.</p>
+                                }
+                            </div>
                            @if (selectedMatch()?.status !== 2) {
                                <button type="submit" [disabled]="resultForm.invalid" class="w-full bg-[#388e14] hover:bg-[#2e7510] text-white py-3 rounded-lg font-bold shadow-md transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">CERRAR ACTA</button>
                            } @else {
@@ -390,21 +526,38 @@
                  }
               </div>
                <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                 <table class="w-full text-left">
-                    <thead class="bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase"><tr><th class="px-6 py-3">Nombre</th><th class="px-6 py-3">Fechas</th><th class="px-6 py-3">Estado</th><th class="px-6 py-3 text-right">Acciones</th></tr></thead>
-                    <tbody class="divide-y divide-gray-100">
-                        @for (t of tournamentsList(); track t.id) {
-                          <tr class="hover:bg-gray-50 text-sm">
-                             <td class="px-6 py-4 font-medium">{{ t.name }}</td><td class="px-6 py-4 text-gray-600">{{ t.startDate | date:'shortDate' }} - {{ t.endDate ? (t.endDate | date:'shortDate') : '...' }}</td>
-                             <td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs font-bold" [ngClass]="(!t.endDate || isFuture(t.endDate)) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">{{ (!t.endDate || isFuture(t.endDate)) ? 'ACTIVO' : 'FINALIZADO' }}</span></td>
-                             <td class="px-6 py-4 text-right"><button (click)="startEditingTournament(t)" class="text-blue-600 mr-2">Editar</button><button (click)="deleteTournament(t)" class="text-red-600">Borrar</button></td>
-                          </tr>
-                       } @empty { <tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">No hay torneos.</td></tr> }
-                    </tbody>
-                 </table>
-              </div>
+                  <table class="w-full text-left">
+                     <thead class="bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase"><tr><th class="px-6 py-3">Nombre</th><th class="px-6 py-3">Fechas</th><th class="px-6 py-3">Estado</th><th class="px-6 py-3 text-right">Acciones</th></tr></thead>
+                     <tbody class="divide-y divide-gray-100">
+                         @for (t of tournamentsList(); track t.id) {
+                           <tr class="hover:bg-gray-50 text-sm" [ngClass]="{'opacity-60 bg-gray-50/50': !t.isActive}">
+                              <td class="px-6 py-4 font-medium">{{ t.name }}</td><td class="px-6 py-4 text-gray-600">{{ t.startDate | date:'shortDate' }} - {{ t.endDate ? (t.endDate | date:'shortDate') : '...' }}</td>
+                              <td class="px-6 py-4">
+                                 @if (!t.isActive) {
+                                    <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-red-50 text-red-700 border border-red-200">Inactivo</span>
+                                 } @else if (!t.endDate || isFuture(t.endDate)) {
+                                    <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-green-50 text-green-700 border border-green-200">ACTIVO</span>
+                                 } @else {
+                                    <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-gray-100 text-gray-700 border border-gray-200">FINALIZADO</span>
+                                 }
+                              </td>
+                              <td class="px-6 py-4 text-right">
+                                 <button (click)="startEditingTournament(t)" class="text-blue-600 mr-2 hover:underline">Editar</button>
+                                 <button (click)="deleteTournament(t)" [ngClass]="t.isActive ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'" class="font-medium hover:underline">
+                                    {{ t.isActive ? 'Desactivar' : 'Activar' }}
+                                 </button>
+                              </td>
+                           </tr>
+                        } @empty { <tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">No hay torneos.</td></tr> }
+                     </tbody>
+                  </table>
+               </div>
            </div>
-        } @else { <div class="p-12 text-center text-gray-500">Vista en construcción</div> }
+         } @else if (currentView() === 'noticias') {
+            <app-admin-news></app-admin-news>
+         } @else if (currentView() === 'diseno') {
+            <app-admin-landing></app-admin-landing>
+         } @else { <div class="p-12 text-center text-gray-500">Vista en construcción</div> }
 
       </div>
     </div>

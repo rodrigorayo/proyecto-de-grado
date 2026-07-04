@@ -10,7 +10,7 @@ namespace League.Infrastructure.Services
     {
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
-        private const string _model = "gemini-2.5-flash"; // Modelo rápido y gratis
+        private const string _model = "gemini-2.5-flash"; 
 
         public GeminiAIService(IConfiguration configuration)
         {

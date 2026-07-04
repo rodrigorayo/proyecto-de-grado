@@ -7,6 +7,8 @@ import { MatchService } from '../../services/match.service';
 import { TournamentService } from '../../services/tournament.service';
 import { PlayerService } from '../../services/player.service';     // 👈 NUEVO
 import { MatchEventService } from '../../services/match-event.service'; // 👈 NUEVO
+import { AlertService } from '../../services/alert.service';
+
 
 @Component({
   selector: 'app-committee-dashboard',
@@ -23,6 +25,8 @@ export class CommitteeDashboardComponent implements OnInit {
   private tournamentService = inject(TournamentService);
   private playerService = inject(PlayerService);         // 👈 Inyectar
   private matchEventService = inject(MatchEventService); // 👈 Inyectar
+  private alertService = inject(AlertService);
+
 
   // --- ESTADO ---
   tournaments = signal<any[]>([]);
@@ -157,7 +161,7 @@ export class CommitteeDashboardComponent implements OnInit {
           // Reset parcial
           this.eventForm.patchValue({ minute: minute, type: '0', playerId: '' }); 
         },
-        error: (e) => alert('Error al agregar evento: ' + (e.error?.error || e.message))
+        error: (e) => this.alertService.showAlert('Error al agregar evento: ' + (e.error?.error || e.message), 'error', 'Error')
       });
     }
   }
@@ -177,12 +181,12 @@ export class CommitteeDashboardComponent implements OnInit {
 
           this.matchService.updateMatchResult(matchId, command).subscribe({
             next: () => {
-              alert('✅ Acta Cerrada y Resultado Final Registrado');
+              this.alertService.showAlert('Acta cerrada y resultado final registrado exitosamente.', 'success', 'Éxito');
               this.loadMatches();
               this.selectedMatch.set(null);
               this.currentView.set('partidos');
             },
-            error: (err) => alert(`❌ Error: ${err.error?.error || 'No se pudo guardar'}`)
+            error: (err) => this.alertService.showAlert(`Error al guardar el acta: ${err.error?.error || 'No se pudo guardar'}`, 'error', 'Error')
           });
       }
   }

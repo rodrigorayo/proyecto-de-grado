@@ -1,18 +1,17 @@
 ﻿using MediatR;
 using League.Application.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using League.Domain.Entities; // Necesario para acceder a Match
-// using League.Domain.Enums; // Ya no es estrictamente necesario si usamos el método de la entidad
+using League.Domain.Entities;
 
 namespace League.Application.Features.Matches.Commands.UpdateMatchResult
 {
     // 1. Datos que vienen del Frontend (DTO)
     public class UpdateMatchResultCommand : IRequest<bool>
     {
-        public Guid MatchId { get; set; } // Corregido: Ahora es Guid
+        public Guid MatchId { get; set; }
         public int HomeScore { get; set; }
         public int AwayScore { get; set; }
-        public string? Incidents { get; set; } // Opcional, por si lo usamos luego
+        public string? Incidents { get; set; } // Observaciones del árbitro
     }
 
     // 2. Lógica de negocio
@@ -28,25 +27,39 @@ namespace League.Application.Features.Matches.Commands.UpdateMatchResult
         public async Task<bool> Handle(UpdateMatchResultCommand request, CancellationToken cancellationToken)
         {
             // A. Buscamos el partido por GUID
-            var match = await _context.Matches
-                .FirstOrDefaultAsync(m => m.Id == request.MatchId, cancellationToken);
-
+            var match = await _context.Matches.FirstOrDefaultAsync(m => m.Id == request.MatchId, cancellationToken);
             if (match == null) return false; // No existe
 
-            // B. Usamos TU método de la entidad (Esto es DDD puro ✅)
-            // Este método ya se encarga de poner el Status = Finalized y validar negativos
             try
             {
-                match.FinishMatch(request.HomeScore, request.AwayScore);
+                // B. Actualizamos el partido
+                // Usamos el método UpdateResultDetails que creamos en Match.cs para guardar Goles + Incidencias + Status
+                match.UpdateResultDetails(request.HomeScore, request.AwayScore, request.Incidents);
+
+                // 👇👇👇 C. MAGIA DE PREDICCIONES (PRODE) 👇👇👇
+
+                // 1. Traemos todas las predicciones asociadas a este partido
+                var predictions = await _context.Predictions
+                    .Where(p => p.MatchId == request.MatchId)
+                    .ToListAsync(cancellationToken);
+
+                // 2. Recorremos cada predicción y calculamos si ganó puntos
+                foreach (var pred in predictions)
+                {
+                    // El método CalculatePoints está en tu entidad Prediction.cs
+                    // Comparará el pronóstico del usuario vs el resultado real (request.HomeScore)
+                    pred.CalculatePoints(request.HomeScore, request.AwayScore);
+                }
+
+                // 👆👆👆 FIN MAGIA 👆👆👆
             }
             catch (Exception)
             {
-                // Si el partido ya estaba finalizado o hay error de lógica, retornamos false
-                // (O podrías lanzar la excepción para que el Controller la capture)
+                // Si hay un error de lógica de dominio (ej: marcador negativo), retornamos false
                 return false;
             }
 
-            // C. Guardamos cambios
+            // D. Guardamos TODOS los cambios (Partido actualizado + Puntos de usuarios asignados)
             await _context.SaveChangesAsync(cancellationToken);
 
             return true;
