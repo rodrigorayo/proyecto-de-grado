@@ -3,13 +3,13 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
 # Copia los archivos del proyecto y restaura dependencias
-COPY *.sln .
+COPY *.slnx .
 COPY League.Application/*.csproj ./League.Application/
 COPY League.Infrastructure/*.csproj ./League.Infrastructure/
 COPY League.Presentation/*.csproj ./League.Presentation/
 COPY League.WebApi/*.csproj ./League.WebApi/
 COPY League/*.csproj ./League/
-RUN dotnet restore
+RUN dotnet restore League.WebApi/League.WebApi.csproj
 
 # Copia todo lo demás y compila
 COPY . .
