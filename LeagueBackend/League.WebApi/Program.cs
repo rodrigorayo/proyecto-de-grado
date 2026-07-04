@@ -3,13 +3,13 @@ using League.Application.Common.Interfaces;
 using League.Infrastructure;
 using League.Infrastructure.Persistence;
 using League.Presentation;
-using Microsoft.AspNetCore.Authentication.JwtBearer; // <--- NUEVO
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens; // <--- NUEVO
-using Microsoft.OpenApi.Models; // <--- NUEVO
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Serilog;
-using System.Text; // <--- NUEVO
-using System.Text.Json.Serialization; // <--- Agrega este using arriba
+using System.Text;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,7 +39,7 @@ builder.Services.AddCors(options =>
                         .AllowAnyHeader());
 });
 
-// --- NUEVO: CONFIGURACI�N DE AUTENTICACI�N JWT ---
+// Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -54,29 +54,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true
         };
     });
-// -------------------------------------------------
 
 builder.Services.AddControllers()
-.AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+.AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
 
 builder.Services.AddEndpointsApiExplorer();
 
-// --- NUEVO: CONFIGURACI�N DE SWAGGER CON CANDADO ---
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "League.WebApi", Version = "v1" });
-
-    // Definir el esquema de seguridad (Bearer)
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
+        Description = "JWT Authorization header using the Bearer scheme.",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
-
-    // Agregar el requisito de seguridad global
     c.AddSecurityRequirement(new OpenApiSecurityRequirement()
     {
         {
@@ -95,9 +89,15 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
-// ---------------------------------------------------
 
 var app = builder.Build();
+
+// AUTO MIGRATE ON STARTUP
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -110,11 +110,8 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowAngular");
 
-// --- NUEVO: ACTIVAR EL MIDDLEWARE DE AUTENTICACI�N ---
-// IMPORTANTE: UseAuthentication debe ir ANTES de UseAuthorization
 app.UseAuthentication();
 app.UseAuthorization();
-// -----------------------------------------------------
 
 app.MapControllers();
 
